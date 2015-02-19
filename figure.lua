@@ -12,7 +12,7 @@ function figure:new_poly(cx, cy, radius, count)
 	local f = figure:new()
 	local j
 
-	for i=0, count do
+	for i=0, count-1 do
 		local x = cx + radius * math.cos(math.pi * 2 * (i / count))
 		local y = cy + radius * math.sin(math.pi * 2 * (i / count))
 
@@ -24,7 +24,7 @@ function figure:new_poly(cx, cy, radius, count)
 		end
 	end
 
-	j.circle_connect = f.root
+	f.root.poly_loop = j
 	return f
 end
 

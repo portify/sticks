@@ -143,34 +143,36 @@ function joint:find_handle(x, y)
     end
 end
 
+function joint:draw_to(parent)
+    if self.is_circle then
+        local dx = self.pos[1] - parent.pos[1]
+        local dy = self.pos[2] - parent.pos[2]
+
+        local r = math.sqrt(dx^2 + dy^2) / 2
+
+        local x = parent.pos[1] + dx / 2
+        local y = parent.pos[2] + dy / 2
+
+        love.graphics.circle("line", x, y, r, r*2)
+    else
+        love.graphics.line(parent.pos[1], parent.pos[2], self.pos[1], self.pos[2])
+    end
+end
+
 function joint:draw()
-    -- love.graphics.circle("fill", self.pos[1], self.pos[2], self.radius, self.radius * 2)
+    love.graphics.setColor(0, 0, 0)
     love.graphics.setLineWidth(self.width)
 
-    for i, other in ipairs(self.children) do
-        love.graphics.setColor(0, 0, 0)
-
-        if other.is_circle then
-            local dx = other.pos[1] - self.pos[1]
-            local dy = other.pos[2] - self.pos[2]
-
-            local r = math.sqrt(dx^2 + dy^2) / 2
-
-            local x = self.pos[1] + dx / 2
-            local y = self.pos[2] + dy / 2
-
-            love.graphics.circle("line", x, y, r, r*2)
-        else
-            love.graphics.line(self.pos[1], self.pos[2], other.pos[1], other.pos[2])
-        end
-
-        other:draw()
+    if self.parent then
+        self:draw_to(self.parent)
     end
 
-    if self.circle_connect ~= nil then
-        local other = self.circle_connect
-        love.graphics.setColor(0, 0, 0)
-        love.graphics.line(self.pos[1], self.pos[2], other.pos[1], other.pos[2])
+    if self.poly_loop then
+        self:draw_to(self.poly_loop)
+    end
+
+    for i, other in ipairs(self.children) do
+        other:draw()
     end
 
     if editor.draw_handles then
