@@ -58,8 +58,8 @@ function love.load()
 	-- Add a basic test figure
 	local f = figure:new()
 	f.root = joint:new{50, 50}
-	f.root:connect(joint:new{ 50, 150})
-	f.root:connect(joint:new{150,  50})
+	-- f.root:connect(joint:new{ 50, 150})
+	-- f.root:connect(joint:new{150,  50})
 	table.insert(editor.figures, f)
 	update_joint_count()
 end
@@ -110,6 +110,15 @@ function love.keypressed(key, scancode)
 		love.filesystem.write(name, msgpack.pack(make_save()))
 	elseif key == "l" then
 		from_save(msgpack.unpack(love.filesystem.read(name)))
+	end
+
+	-- stuff
+	if editor.active_joint ~= nil then
+		local j = editor.active_joint
+
+		if key == "c" then
+			j.is_circle = not j.is_circle
+		end
 	end
 end
 

@@ -6,6 +6,7 @@ function joint:new(pos)
     return setmetatable({
         pos = pos,
         width = 2,
+        is_circle = false,
         parent = nil,
         children = {},
         locked = false
@@ -16,9 +17,8 @@ function joint:from_save(t)
     local j = self:new(t.p)
     j.width = t.w
 
-    if t.l then
-        j.locked = true
-    end
+    if t.l then j.locked    = true end
+    if t.r then j.is_circle = true end
 
     if t.c ~= nil then
         for i, data in ipairs(t.c) do
@@ -36,9 +36,8 @@ function joint:make_save()
         w = self.width
     }
 
-    if self.locked then
-        t.l = true
-    end
+    if self.locked    then t.l = true end
+    if self.is_circle then t.r = true end
 
     if self.children[1] ~= nil then
         t.c = {}
@@ -150,7 +149,21 @@ function joint:draw()
 
     for i, other in ipairs(self.children) do
         love.graphics.setColor(0, 0, 0)
-        love.graphics.line(self.pos[1], self.pos[2], other.pos[1], other.pos[2])
+
+        if other.is_circle then
+            local dx = other.pos[1] - self.pos[1]
+            local dy = other.pos[2] - self.pos[2]
+
+            local r = math.sqrt(dx^2 + dy^2) / 2
+
+            local x = self.pos[1] + dx / 2
+            local y = self.pos[2] + dy / 2
+
+            love.graphics.circle("line", x, y, r, r*2)
+        else
+            love.graphics.line(self.pos[1], self.pos[2], other.pos[1], other.pos[2])
+        end
+
         other:draw()
     end
 
