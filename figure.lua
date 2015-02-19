@@ -1,6 +1,9 @@
+local joint = require "joint"
+
 local figure = {}
 figure.__index = figure
 
+-- Class methods
 function figure:new()
     return setmetatable({}, self)
 end
@@ -25,10 +28,50 @@ function figure:new_poly(cx, cy, radius, count)
 	return f
 end
 
+function figure:from_save(t)
+    local f = self:new()
+
+    if t ~= nil then
+        f.root = joint:from_save(t)
+    end
+
+    return f
+end
+
+-- Instance methods
+function figure:make_save()
+    if self.root == nil then
+        return nil
+    end
+
+    return self.root:make_save()
+end
+
 function figure:find_handle(x, y)
     if self.root ~= nil then
         return self.root:find_handle(x, y)
     end
+end
+
+function figure:count_joints()
+    local count = 0
+
+    local stack = {self.root}
+    local visit = {[self.root] = true}
+
+    while stack[1] ~= nil do
+        local top = table.remove(stack)
+        count = count + 1
+
+        for i, j in ipairs(top.children) do
+            if not visit[j] then
+                table.insert(stack, j)
+                visit[j] = true
+            end
+        end
+    end
+
+    return count
 end
 
 function figure:draw()

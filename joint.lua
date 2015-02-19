@@ -1,6 +1,7 @@
 local joint = {}
 joint.__index = joint
 
+-- Class methods
 function joint:new(pos)
     return setmetatable({
         pos = pos,
@@ -9,6 +10,45 @@ function joint:new(pos)
         children = {},
         locked = false
     }, self)
+end
+
+function joint:from_save(t)
+    local j = self:new(t.p)
+    j.width = t.w
+
+    if t.l then
+        j.locked = true
+    end
+
+    if t.c ~= nil then
+        for i, data in ipairs(t.c) do
+            j:connect(self:from_save(data))
+        end
+    end
+
+    return j
+end
+
+-- Instance methods
+function joint:make_save()
+    local t = {
+        p = self.pos,
+        w = self.width
+    }
+
+    if self.locked then
+        t.l = true
+    end
+
+    if self.children[1] ~= nil then
+        t.c = {}
+
+        for i, j in ipairs(self.children) do
+            table.insert(t.c, j:make_save())
+        end
+    end
+
+    return t
 end
 
 function joint:connect(other)

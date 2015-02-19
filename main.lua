@@ -5,25 +5,19 @@ editor = {
 	joint_count = 0
 }
 
+local msgpack = require "lib/msgpack"
+
 local joint = require "joint"
 local figure = require "figure"
 
-local function update_joint_count(curr)
-	if curr == nil then
-		editor.joint_count = 0
+local function update_joint_count()
+	local count = 0
 
-		for i, fig in ipairs(editor.figures) do
-			if fig.root ~= nil then
-				update_joint_count(fig.root)
-			end
-		end
-	else
-		editor.joint_count = editor.joint_count + 1
-
-		for i, j in ipairs(curr.children) do
-			update_joint_count(j)
-		end
+	for i, f in ipairs(editor.figures) do
+		count = count + f:count_joints()
 	end
+
+	editor.joint_count = count
 end
 
 local function find_handle(x, y)
@@ -36,6 +30,26 @@ local function find_handle(x, y)
 			return j
 		end
 	end
+end
+
+local function from_save(t)
+	editor.figures = {}
+
+	for i, data in ipairs(t) do
+		table.insert(editor.figures, figure:from_save(data))
+	end
+
+	update_joint_count()
+end
+
+local function make_save()
+	local t = {}
+
+	for i, j in ipairs(editor.figures) do
+		table.insert(t, j:make_save())
+	end
+
+	return t
 end
 
 function love.load()
@@ -85,6 +99,17 @@ function love.mousereleased(x, y, button)
 		editor.drag_handle = nil
 		editor.drag_x = nil
 		editor.drag_y = nil
+	end
+end
+
+function love.keypressed(key, scancode)
+	--  hardcoded filename for now
+	local name = "scene.mps"
+
+	if key == "s" then
+		love.filesystem.write(name, msgpack.pack(make_save()))
+	elseif key == "l" then
+		from_save(msgpack.unpack(love.filesystem.read(name)))
 	end
 end
 
