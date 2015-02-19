@@ -1,0 +1,6 @@
+{
+    "cmd": "love",
+    "args": ["{PROJECT_PATH}"],
+    "sh": true,
+    "cwd": "{PROJECT_PATH}"
+}
