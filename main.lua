@@ -55,12 +55,11 @@ end
 function love.load()
 	love.graphics.setBackgroundColor(222, 222, 222)
 
+	-- local f = figure:new_poly(300, 300, 160, 12)
+
 	-- Add a basic test figure
-	--local f = figure:new()
-	--f.root = joint:new{50, 50}
-	local f = figure:new_poly(300, 300, 160, 12)
-	-- f.root:connect(joint:new{ 50, 150})
-	-- f.root:connect(joint:new{150,  50})
+	local f = figure:new()
+	f.root = joint:new{50, 50}
 	table.insert(editor.figures, f)
 	update_joint_count()
 end
