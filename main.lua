@@ -197,6 +197,8 @@ local function draw_status()
 	love.graphics.print(text, 8, height - h + 4)
 end
 
+-- local start = love.timer.getTime()
+
 local function draw_timeline()
 	local width, height = love.graphics.getDimensions()
 
@@ -229,8 +231,11 @@ local function draw_timeline()
 	end
 
 	-- Frame indicator
+	-- local t = love.timer.getTime() - start
+	local t = (math.sin(love.timer.getTime()) + 1) * 4
+
 	love.graphics.setColor(255, 0, 0)
-	love.graphics.rectangle("fill", x + names_w, y + times_h, 2, h - times_h)
+	love.graphics.rectangle("fill", x + names_w + t * 50, y + times_h, 2, h - times_h)
 end
 
 function love.draw()
