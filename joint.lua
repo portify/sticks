@@ -9,7 +9,8 @@ function joint:new(pos)
         is_circle = false,
         parent = nil,
         children = {},
-        locked = false
+        locked = false,
+        vel = {0, 0}
     }, self)
 end
 
@@ -71,7 +72,7 @@ function joint:disconnect()
 end
 
 function joint:move_to(nx, ny, from)
-    if self.locked then
+    if self.locked and from ~= nil then
         return nx - self.pos[1], ny - self.pos[2]
     end
 
@@ -91,6 +92,9 @@ function joint:move_to(nx, ny, from)
     -- Move this joint
     local ox, oy = self.pos[1], self.pos[2]
     self.pos = {nx, ny}
+
+    local total_resistutationing_x = 0
+    local total_resistutationing_y = 0
 
     -- Try to move all the affected joints
     for i, other in ipairs(others) do
@@ -120,10 +124,24 @@ function joint:move_to(nx, ny, from)
             -- In reality for this to work well we need should recurse up the
             -- chain of affected joints and run a modified algorithm down to
             -- the locked joint if one is found from the start
+
+            -- just out of curiosity
+            -- what happens if i do this
+            -- self.pos[1] = self.pos[1] - rx
+            -- self.pos[2] = self.pos[2] - ry
+
+            total_resistutationing_x = total_resistutationing_x + rx
+            total_resistutationing_y = total_resistutationing_y + ry
         end
     end
 
-    return 0, 0
+    self.pos[1] = self.pos[1] - total_resistutationing_x
+    self.pos[2] = self.pos[2] - total_resistutationing_y
+
+    self.vel[1] = self.vel[1] - (ox - nx)
+    self.vel[2] = self.vel[2] - (oy - ny)
+
+    return total_resistutationing_x, total_resistutationing_y
 end
 
 function joint:find_handle(x, y)
@@ -159,6 +177,29 @@ function joint:draw_to(parent)
     end
 end
 
+function joint:update(dt)
+    if #self.children > 0 then
+        for i, child in ipairs(self.children) do
+            child:update(dt)
+        end
+
+        return
+    end
+
+    -- self.vel[1] = self.vel[1] + 600 * dt
+    -- self.vel[2] = self.vel[2] * 0.9999
+
+    if GRAVITY_IS_A_THING then
+        self.vel[1] = self.vel[1] + 600 * dt
+        self.vel[2] = self.vel[2] + 800 * dt
+    end
+
+    local x = self.pos[1] + self.vel[1] * dt
+    local y = self.pos[2] + self.vel[2] * dt
+
+    self:move_to(x, y)
+end
+
 function joint:draw()
     love.graphics.setColor(0, 0, 0)
     love.graphics.setLineWidth(self.width)
@@ -175,7 +216,7 @@ function joint:draw()
         other:draw()
     end
 
-    if editor.draw_handles then
+    if editor.draw_handles and editor.drag_handle == nil then
         if self == editor.active_joint then
             love.graphics.setColor(0, 255, 0)
         elseif self.locked then

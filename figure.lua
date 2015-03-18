@@ -74,6 +74,12 @@ function figure:count_joints()
     return count
 end
 
+function figure:update(dt)
+    if self.root ~= nil then
+        self.root:update(dt)
+    end
+end
+
 function figure:draw()
     if self.root ~= nil then
         self.root:draw()

@@ -110,6 +110,13 @@ function love.keypressed(key, scancode)
 		love.filesystem.write(name, msgpack.pack(make_save()))
 	elseif key == "l" then
 		from_save(msgpack.unpack(love.filesystem.read(name)))
+	elseif key == "r" then
+		local f = figure:new()
+		f.root = joint:new{50, 50}
+		editor.figures = {f}
+		update_joint_count()
+	elseif key == "g" then
+		GRAVITY_IS_A_THING = not GRAVITY_IS_A_THING
 	end
 
 	-- stuff
@@ -135,6 +142,95 @@ function love.update(dt)
 			editor.drag_handle.pos[2] = my + editor.drag_y
 		end
 	end
+
+	-- for i, fig in ipairs(editor.figures) do
+	-- 	fig:update(dt)
+	-- end
+end
+
+local function draw_menu()
+	local width, height = love.graphics.getDimensions()
+
+	local bar_height = 22
+
+	local label_space = 8
+	local label_width = 64
+
+	local labels = {"File", "Edit", "Tools", "Render", "Help"}
+
+	love.graphics.setColor(196, 196, 196)
+	love.graphics.rectangle("fill", 0, 0, width, bar_height)
+	love.graphics.setColor(0, 0, 0, 183)
+
+	local font = love.graphics.getFont()
+	local x = 0
+
+	local mx, my = love.mouse.getPosition()
+
+	for i, label in ipairs(labels) do
+		local w = font:getWidth(label) + label_space * 2
+
+		if my < bar_height and mx >= x and mx < x + w then
+			love.graphics.setColor(0, 0, 0, 32)
+			love.graphics.rectangle("fill", x, 0, w, bar_height)
+			love.graphics.setColor(0, 0, 0, 183)
+		end
+
+		love.graphics.print(label, x + label_space, 4)
+
+		x = x + w
+	end
+end
+
+local function draw_status()
+	local width, height = love.graphics.getDimensions()
+	local h = 22
+
+	local text =
+		"FPS: " .. love.timer.getFPS() .. "  |  " ..
+		"Figures: " .. #editor.figures .. "  |  " ..
+		"Joints: " .. editor.joint_count
+
+	love.graphics.setColor(196, 196, 196)
+	love.graphics.rectangle("fill", 0, height - h, width, h)
+	love.graphics.setColor(0, 0, 0, 183)
+	love.graphics.print(text, 8, height - h + 4)
+end
+
+local function draw_timeline()
+	local width, height = love.graphics.getDimensions()
+
+	local w = width
+	local h = 64
+
+	local x = 0
+	local y = height - 22 - h
+
+	local names_w = 96
+	local times_h = 22
+
+	love.graphics.setColor(206, 206, 206)
+	love.graphics.rectangle("fill", x, y, w, h)
+
+	-- Name background
+	love.graphics.setColor(0, 0, 0, 32)
+	love.graphics.rectangle("fill", x, y + times_h, names_w, h - times_h)
+
+	-- Time ticks
+	local tx = 0
+
+	love.graphics.setColor(0, 0, 0, 72)
+
+	while tx < w - names_w do
+		love.graphics.print(tx / 50, names_w + tx, y + 4)
+		--love.graphics.line(names_w + tx, y + times_h, names_w + tx, y + h)
+		love.graphics.rectangle("fill", names_w + tx, y + times_h, 1, h - times_h)
+		tx = tx + 50
+	end
+
+	-- Frame indicator
+	love.graphics.setColor(255, 0, 0)
+	love.graphics.rectangle("fill", x + names_w, y + times_h, 2, h - times_h)
 end
 
 function love.draw()
@@ -142,21 +238,7 @@ function love.draw()
 		fig:draw()
 	end
 
-	local width, height = love.graphics.getDimensions()
-
-	local stats_w = width - 8
-	local stats_h = love.graphics.getFont():getHeight("X") + 8
-	local stats_x = 8
-	local stats_y = height - stats_h + 4
-
-	local text =
-		"FPS: " .. love.timer.getFPS() .. "  |  " ..
-		"Figures: " .. #editor.figures .. "  |  " ..
-		"Joints: " .. editor.joint_count
-
-	love.graphics.setColor(163, 163, 163, 83)
-	love.graphics.rectangle("fill", 0, height - stats_h, width, stats_h)
-
-	love.graphics.setColor(0, 0, 0, 183)
-	love.graphics.print(text, stats_x, stats_y)
+	draw_menu()
+	draw_status()
+	draw_timeline()
 end
